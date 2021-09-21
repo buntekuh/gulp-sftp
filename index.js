@@ -166,7 +166,7 @@ module.exports = function (options) {
             } else {
                 gutil.log('Connection :: closed');
             }
-            
+
         });
 
 
@@ -262,7 +262,7 @@ module.exports = function (options) {
                         next();
                     }
                 });
-                
+
             },function(){
 
                 var stream = sftp.createWriteStream(finalRemotePath,{//REMOTE PATH
@@ -281,8 +281,14 @@ module.exports = function (options) {
                 var size = file.stat.size;
 
 
-                file.pipe(stream); // start upload
-
+                //file.pipe(stream); // start upload
+                // start upload
+                if ( file.isStream() ) {
+                    file.contents.pipe( stream );
+                } else if ( file.isBuffer() ) {
+                    stream.end( file.contents );
+                }
+                
                 stream.on('drain',function(){
                     uploadedBytes+=highWaterMark;
                     var p = Math.round((uploadedBytes/size)*100);
